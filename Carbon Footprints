@@ -1,0 +1,42 @@
+from flask import Flask, render_template, request
+import random
+
+app = Flask(__name__)
+
+FUN_FACTS = [
+    "Trees can communicate and share nutrients through underground networks!",
+    "A single mature tree can absorb up to 48 pounds of CO2 per year.",
+    "Plastic waste kills over 1 million marine animals each year.",
+    "Earth's ozone layer is slowly healing due to reduced CFC emissions.",
+    "Bamboo is one of the fastest-growing plants and can help reduce deforestation."
+]
+
+QUESTIONS = [
+    "Do you use public transport regularly?",
+    "Do you use reusable shopping bags?",
+    "Do you conserve water by turning off taps when not in use?",
+    "Do you use energy-efficient appliances?",
+    "Do you avoid plastic products?"
+]
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    if request.method == "POST":
+        answers = [request.form.get(f"q{i}") == "yes" for i in range(len(QUESTIONS))]
+        score = sum(answers)
+
+        if score >= 4:
+            footprint = "🥇 Golden Footprint - Excellent!"
+        elif 2 <= score <= 3:
+            footprint = "🥈 Silver Footprint - Good Effort!"
+        else:
+            footprint = "🥉 Dirty Footprint - Needs Improvement!"
+
+        fun_fact = random.choice(FUN_FACTS)
+
+        return render_template("result.html", footprint=footprint, fun_fact=fun_fact)
+
+    return render_template("index.html", questions=QUESTIONS)
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -1,0 +1,90 @@
+import pygame
+import sys
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Set up screen
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Historical Escape: Riddle Challenge")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Font setup
+font = pygame.font.Font(None, 30)
+
+# Load images (replace with AI-generated assets)
+images = {
+    "shivaji_court": pygame.image.load("images/shivaji_court.jpg"),
+    "success": pygame.image.load("images/success.jpg"),
+    "failure": pygame.image.load("images/failure.jpg"),
+}
+
+# Riddles and answers (historical theme)
+riddles = [
+    {"question": "I was the mastermind behind Shivaji’s guerrilla warfare. Who am I?",
+     "options": ["Tanaji Malusare", "Baji Prabhu", "Bajirao I", "Ram Shastri"],
+     "answer": "Baji Prabhu"},
+    {"question": "Which fort did Shivaji Maharaj famously escape from using a fruit basket?",
+     "options": ["Purandar", "Panhala", "Raigad", "Pratapgad"],
+     "answer": "Panhala"},
+]
+
+current_riddle = random.choice(riddles)
+current_scene = "shivaji_court"
+selected_option = None
+
+# Game loop
+def draw_scene():
+    screen.fill(WHITE)
+    screen.blit(images[current_scene], (0, 0))
+    draw_text(current_riddle["question"], 50, 100)
+    
+    y_offset = 300
+    for i, option in enumerate(current_riddle["options"]):
+        text_surface = font.render(f"{i+1}. {option}", True, BLACK)
+        screen.blit(text_surface, (50, y_offset))
+        y_offset += 40
+    
+    pygame.display.flip()
+
+
+def draw_text(text, x, y):
+    lines = text.split(". ")
+    for i, line in enumerate(lines):
+        text_surface = font.render(line, True, BLACK)
+        screen.blit(text_surface, (x, y + i * 30))
+
+
+def main():
+    global current_scene, selected_option
+    running = True
+    
+    while running:
+        draw_scene()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if pygame.K_1 <= event.key <= pygame.K_4:
+                    selected_index = event.key - pygame.K_1
+                    selected_option = current_riddle["options"][selected_index]
+                    
+                    if selected_option == current_riddle["answer"]:
+                        current_scene = "success"
+                    else:
+                        current_scene = "failure"
+                    
+                    pygame.time.delay(2000)  # Short delay before exiting
+                    running = False
+    
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()

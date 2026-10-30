@@ -1,0 +1,166 @@
+import speech_recognition as sr
+import pyttsx3
+import os
+import webbrowser
+import subprocess
+import pyautogui
+import time
+from datetime import datetime
+import screen_brightness_control as sbc  # For brightness control
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+import ctypes
+
+# Initialize text-to-speech
+engine = pyttsx3.init()
+engine.setProperty('rate', 150)
+engine.setProperty('volume', 1)
+
+# Change your wake word here
+WAKE_WORD = "hp"
+
+def speak(text):
+    """Convert text to speech."""
+    engine.say(text)
+    engine.runAndWait()
+
+def recognize_speech():
+    """Recognize speech and return the detected text."""
+    recognizer = sr.Recognizer()
+    recognizer.energy_threshold = 300
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.adjust_for_ambient_noise(source, duration=1)
+        audio = recognizer.listen(source)
+    try:
+        command = recognizer.recognize_google(audio).strip().lower()
+        print(f"Recognized: {command}")
+        return command
+    except sr.UnknownValueError:
+        return ""
+    except sr.RequestError:
+        return ""
+
+def handle_command(command):
+    """Process user commands and respond accordingly."""
+    if "hello" in command:
+        speak("Hello! How can I assist you?")
+    elif "what time is it" in command:
+        speak(f"The current time is {datetime.now().strftime('%I:%M %p')}")
+    elif "what is your name" in command or "who are you" in command:
+        speak("I am your personal voice assistant,mudra.")
+    elif "go back to sleep" in command or "stop" in command:
+        speak("Goodbye!")
+        exit()
+    elif "open notepad" in command:
+        speak("Opening Notepad.")
+        os.system("notepad.exe")
+    elif "shutdown hp" in command:
+        speak("Shutting down in 10 seconds.")
+        os.system("shutdown /s /t 10")
+    elif "restart hp" in command:
+        speak("Restarting in 10 seconds.")
+        os.system("shutdown /r /t 10")
+    elif "log off" in command:
+        speak("Logging off.")
+        os.system("shutdown -l")
+    elif "search google for" in command:
+        query = command.replace("search google for", "").strip()
+        speak(f"Searching Google for {query}")
+        search_google(query)
+    elif "open chrome" in command:
+        speak("Opening Chrome.")
+        subprocess.Popen("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
+    elif "open vs code" in command:
+        speak("Opening Visual Studio Code.")
+        subprocess.Popen("C:\\Users\\YourUsername\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
+    elif "play" in command and "on youtube" in command:
+        song = command.replace("play", "").replace("on youtube", "").strip()
+        speak(f"Playing {song} on YouTube.")
+        play_youtube(song)
+    elif "chat gpt" in command:
+        query = command.replace("chat gpt", "").strip()
+        speak(f"Searching ChatGPT for {query}.")
+        open_chatgpt_and_search(query)
+    elif "increase brightness" in command:
+        change_brightness(10)
+    elif "decrease brightness" in command:
+        change_brightness(-10)
+    elif "set brightness to" in command:
+        level = int(command.replace("set brightness to", "").strip())
+        set_brightness(level)
+    elif "increase volume" in command:
+        change_volume(10)
+    elif "decrease volume" in command:
+        change_volume(-10)
+    elif "mute volume" in command:
+        mute_volume()
+    elif "unmute volume" in command:
+        unmute_volume()
+    else:
+        speak("Sorry, I didn't understand that. Please try again.")
+
+def search_google(query):
+    url = f"https://www.google.com/search?q={query}"
+    webbrowser.open(url)
+
+def play_youtube(song_name):
+    url = f"https://www.youtube.com/results?search_query={song_name}"
+    webbrowser.open(url)
+
+def open_chatgpt_and_search(query):
+    speak("Opening ChatGPT")
+    webbrowser.open("https://chat.openai.com/")
+    time.sleep(5)
+    pyautogui.typewrite(query)
+    pyautogui.press("enter")
+
+def change_brightness(amount):
+    """Increase or decrease screen brightness."""
+    current_brightness = sbc.get_brightness(display=0)
+    new_brightness = max(0, min(100, current_brightness + amount))
+    sbc.set_brightness(new_brightness, display=0)
+    speak(f"Brightness set to {new_brightness} percent.")
+
+def set_brightness(level):
+    """Set screen brightness to a specific level."""
+    level = max(0, min(100, level))
+    sbc.set_brightness(level, display=0)
+    speak(f"Brightness set to {level} percent.")
+
+def change_volume(amount):
+    """Increase or decrease system volume."""
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = interface.QueryInterface(IAudioEndpointVolume)
+    current_volume = volume.GetMasterVolumeLevelScalar()
+    new_volume = max(0.0, min(1.0, current_volume + amount / 100))
+    volume.SetMasterVolumeLevelScalar(new_volume, None)
+    speak(f"Volume set to {int(new_volume * 100)} percent.")
+
+def mute_volume():
+    """Mute system volume."""
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = interface.QueryInterface(IAudioEndpointVolume)
+    volume.SetMute(1, None)
+    speak("Volume muted.")
+
+def unmute_volume():
+    """Unmute system volume."""
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = interface.QueryInterface(IAudioEndpointVolume)
+    volume.SetMute(0, None)
+    speak("Volume unmuted.")
+
+if __name__ == "__main__":
+    speak(f"I am still asleep, please say '{WAKE_WORD}' to wake me up.")
+    while True:
+        command = recognize_speech()
+        if WAKE_WORD in command:
+            speak("Hey bro, what's up? I am your personal assistant HP! How can I help you?")
+            while True:
+                command = recognize_speech()
+                if command:
+                    handle_command(command)

@@ -1,0 +1,139 @@
+import pygame
+import sys
+
+# Initialize pygame
+pygame.init()
+
+# Set up screen
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Time Travel Adventure")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Font setup
+font = pygame.font.Font(None, 30)
+
+# Load images
+images = {
+    "start": pygame.image.load("images/time_machine.jpg"),
+    "egypt": pygame.image.load("images/egypt.jpg"),
+    "future": pygame.image.load("images/future_city.jpg"),
+    "maratha": pygame.image.load("images/shivaji_palace.jpg"),
+    "shivaji_court": pygame.image.load("images/shivaji_maharaj.jpg"),
+    "escape": pygame.image.load("images/escape.jpg"),
+    "pharaoh": pygame.image.load("images/pharaoh.jpg"),
+    "explore_future": pygame.image.load("images/flying_car.jpg"),
+    "robot": pygame.image.load("images/robot.jpg"),
+    "future_reveal": pygame.image.load("images/future_reveal.jpg"),
+    "warrior_test": pygame.image.load("images/warrior_test.jpg"),
+    "honored": pygame.image.load("images/honored.jpg"),
+    "trusted": pygame.image.load("images/trusted.jpg"),
+    "victory": pygame.image.load("images/victory.jpg"),
+}
+
+# Game data
+story = {
+    "start": {
+        "text": "You find a mysterious time machine. Where do you want to go?",
+        "choices": {"Ancient Egypt": "egypt", "Future City": "future", "Maratha Empire": "maratha"}
+    },
+    "egypt": {
+        "text": "You arrive in Ancient Egypt! The Pharaoh's guards see you. What do you do?",
+        "choices": {"Run": "escape", "Talk": "pharaoh"}
+    },
+    "future": {
+        "text": "You arrive in a futuristic city! Robots are everywhere. What do you do?",
+        "choices": {"Explore": "explore_future", "Talk to a robot": "robot"}
+    },
+    "maratha": {
+        "text": "You arrive in the era of Chhatrapati Shivaji Maharaj! His soldiers see you. What do you do?",
+        "choices": {"Bow and greet": "shivaji_court", "Run away": "escape"}
+    },
+    "shivaji_court": {
+        "text": "You are taken to Shivaji Maharaj's court. He asks about your origins. What do you say?",
+        "choices": {"I am a traveler from the future": "future_reveal", "I am a loyal subject": "warrior_test"}
+    },
+    "future_reveal": {
+        "text": "Shivaji Maharaj is intrigued by your story and asks about future India!",
+        "choices": {"Tell about modern India": "honored", "Keep it a secret": "trusted"}
+    },
+    "warrior_test": {
+        "text": "You are asked to prove your warrior skills in a duel!",
+        "choices": {"Fight": "victory", "Decline": "escape"}
+    },
+    "honored": {
+        "text": "Shivaji Maharaj appreciates your knowledge and makes you a royal historian!",
+        "choices": {"Restart": "start"}
+    },
+    "trusted": {
+        "text": "Shivaji Maharaj respects your wisdom and allows you to stay in his kingdom!",
+        "choices": {"Restart": "start"}
+    },
+    "victory": {
+        "text": "You win the duel and are offered a position in the army!",
+        "choices": {"Restart": "start"}
+    },
+    "escape": {
+        "text": "You run away and hide. You successfully escape but miss the adventure!",
+        "choices": {"Restart": "start"}
+    },
+    "pharaoh": {
+        "text": "The Pharaoh welcomes you and asks about the future. You become a royal advisor!",
+        "choices": {"Restart": "start"}
+    },
+    "explore_future": {
+        "text": "You find a flying car and take a ride across the city!",
+        "choices": {"Restart": "start"}
+    },
+    "robot": {
+        "text": "The robot gives you a tour of the city and teaches you about AI!",
+        "choices": {"Restart": "start"}
+    }
+}
+
+current_scene = "start"
+
+def draw_scene():
+    screen.fill(WHITE)
+    if current_scene in images:
+        screen.blit(images[current_scene], (0, 0))
+    draw_text(story[current_scene]["text"], 50, 100)
+    y_offset = 400
+    choices = list(story[current_scene]["choices"].items())
+    for i, (choice, next_scene) in enumerate(choices):
+        text_surface = font.render(f"{i+1}. {choice}", True, BLACK)
+        screen.blit(text_surface, (50, y_offset))
+        y_offset += 40
+    pygame.display.flip()
+
+def draw_text(text, x, y):
+    lines = text.split(". ")
+    for i, line in enumerate(lines):
+        text_surface = font.render(line, True, BLACK)
+        screen.blit(text_surface, (x, y + i * 30))
+
+def main():
+    global current_scene
+    running = True
+    while running:
+        draw_scene()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                choices = list(story[current_scene]["choices"].values())
+                if event.key == pygame.K_1 and len(choices) > 0:
+                    current_scene = choices[0]
+                elif event.key == pygame.K_2 and len(choices) > 1:
+                    current_scene = choices[1]
+                elif event.key == pygame.K_3 and len(choices) > 2:
+                    current_scene = choices[2]
+    
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()

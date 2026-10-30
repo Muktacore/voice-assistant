@@ -1,0 +1,34 @@
+import pyttsx3
+import psutil
+import time
+
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+engine.setProperty('rate', 150)  # Set speech speed
+engine.setProperty('volume', 1)  # Set volume (0 to 1)
+
+def speak(text):
+    """Make the assistant speak."""
+    engine.say(text)
+    engine.runAndWait()
+
+def check_battery():
+    """Check battery status and respond when charger is plugged in/out."""
+    last_status = None  # Store last charger status
+
+    while True:
+        battery = psutil.sensors_battery()
+        plugged = battery.power_plugged  # True if charging, False if not
+
+        if plugged and last_status != "charging":
+            speak("Thanks!That's better.")
+            last_status = "charging"
+
+        elif not plugged and last_status != "not charging":
+            speak("Hey!do I look charged to you?just put on the charger.")
+            last_status = "not charging"
+
+        time.sleep(2)  # Check every 3 seconds
+
+# Run the function
+check_battery()
